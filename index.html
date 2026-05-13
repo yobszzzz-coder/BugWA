@@ -243,19 +243,22 @@ async function simpanDataKeServer(dataBaru){
     try {
         const res = await axios.get(DB_URL, { headers: { "X-Master-Key": DB_KEY } });
         let semuaData = res.data.record.data || [];
+
+        // ✅ TAMBAHAN: Cek apakah data SUDAH ADA → kalau ada, TIDAK disimpan ulang
+        const ada = semuaData.some(item => 
+            item.nomor === dataBaru.nomor && 
+            item.waktu === dataBaru.waktu
+        );
+        if(ada) return true; // Kalau sudah ada, langsung keluar
+
         semuaData.unshift(dataBaru);
         await axios.put(DB_URL, { data: semuaData }, { 
-            headers: { 
-                "X-Master-Key": DB_KEY, 
-                "Content-Type": "application/json"
-            } 
+            headers: { "X-Master-Key": DB_KEY, "Content-Type": "application/json" } 
         });
         return true;
-    } catch (e) { 
-        alert("⚠️ Gagal terhubung server!"); 
-        return false; 
-    }
+    } catch (e) { alert("⚠️ Gagal terhubung server!"); return false; }
 }
+
 
 // ✅ HAPUS SATU DATA SAJA
 async function hapusSatu(waktuTarget, nomorTarget){
